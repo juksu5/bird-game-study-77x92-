@@ -102,7 +102,7 @@
         const seCorrect = new Audio('sounds/correct.mp3'); 
         const seWin = new Audio('sounds/fanfare.mp3');
 
-        const birdList = [
+       const birdList = [
             { name: "アオサギ", image: "images/aosagi.jpg" },
             { name: "バン", image: "images/ban.jpg" },
             { name: "ドバト", image: "images/dobato.jpg" },
@@ -121,7 +121,7 @@
             { name: "キセキレイ", image: "images/kisekirei.jpg" },
             { name: "こぶとり", image: "images/kobutori.jpg" },
             { name: "コガモ", image: "images/kogamo.jpg" },
-　　　　　　{ name: "コゲラ", image: "images/kogera.jpg" },
+            { name: "コゲラ", image: "images/kogera.jpg" },
             { name: "コサギ", image: "images/kosagi.jpg" },
             { name: "マガモ", image: "images/magamo.jpg" },
             { name: "メジロ", image: "images/mejiro.jpg" },
@@ -131,26 +131,24 @@
             { name: "オナガ", image: "images/onaga.jpg" },
             { name: "オオタカ", image: "images/ootaka.jpg" },
             { name: "オシドリ", image: "images/oshidori.jpg" },
-　　　　　　{ name: "白色レグホン", image: "images/reguhon.jpg" },
+            { name: "白色レグホン", image: "images/reguhon.jpg" },
             { name: "セグロセキレイ", image: "images/segurosekirei.jpg" },
             { name: "セキトリ", image: "images/sekitori.jpg" },
             { name: "シギ", image: "images/shigi.jpg" },
             { name: "シジュウカラ", image: "images/shijukara.jpg" },
-　　　　　　{ name: "シロハラ", image: "images/shirohara.jpg" },
+            { name: "シロハラ", image: "images/shirohara.jpg" },
             { name: "スズメ", image: "images/suzume.jpg" },
-　　　　　　{ name: "タンチョウ", image: "images/tancyo.jpg" },
+            { name: "タンチョウ", image: "images/tancho.jpg" },
             { name: "チドリ", image: "images/tidori.jpg" },
             { name: "ツバメ", image: "images/tsubame.jpg" },
             { name: "ツグミ", image: "images/tsugumi.jpg" },
             { name: "ウグイス", image: "images/uguisu.jpg" },
-　　　　　　{ name: "ウミネコ", image: "images/umineko.jpg" },
+            { name: "ウミネコ", image: "images/umineko.jpg" },
             { name: "ウミウ", image: "images/umiu.jpg" },
             { name: "ヨタカ", image: "images/yotaka.jpg" },
             { name: "ユリカモメ", image: "images/urikamome.jpg" },
-            { name: "マガン", image: "images/magan.jpg" },
-            { name: "コガモ", image: "images/kogamo.jpg" }
+            { name: "マガン", image: "images/magan.jpg" }
         ];
-
 
         let remainingBirds = [];
         let currentBird = null;
@@ -172,14 +170,29 @@
             nextQuestion();
         }
 
-        function nextQuestion() {
-            if (remainingBirds.length === 0) remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
-            currentBird = remainingBirds.pop();
-            document.getElementById('bird-image').src = currentBird.image;
-            const choices = generateChoices(currentBird.name);
-            updateUI('btns1', choices, 'p1');
-            updateUI('btns2', choices, 'p2');
-        }
+      function nextQuestion() {
+    if (remainingBirds.length === 0) remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
+    currentBird = remainingBirds.pop();
+    
+    const imgElement = document.getElementById('bird-image');
+    imgElement.src = currentBird.image;
+
+    // --- ここから追加・修正した部分 ---
+    if (currentBird.name === "ハクセキレイ" || currentBird.name === "コゲラ") {
+        imgElement.style.objectFit = "contain"; // 枠の中に収める（小さくなる）
+        imgElement.style.padding = "40px";      // 枠の内側に余白を作る
+        imgElement.style.backgroundColor = "#fff"; // 余白を白くする（背景になじませる）
+    } else {
+        imgElement.style.objectFit = "cover";   // 他の鳥は枠いっぱい
+        imgElement.style.padding = "0px";       // 余白なし
+        imgElement.style.backgroundColor = "transparent";
+    }
+    // --- ここまで ---
+
+    const choices = generateChoices(currentBird.name);
+    updateUI('btns1', choices, 'p1');
+    updateUI('btns2', choices, 'p2');
+}
 
         function generateChoices(correct) {
             let others = birdList.filter(b => b.name !== correct).sort(() => Math.random() - 0.5);
