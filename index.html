@@ -1,47 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="robots" content="noindex,nofollow">   
- <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex,nofollow">
     <title>とりなまえバトル</title>
     <style>
-        /* 背景をCanvaの画像にする */
-body { 
-    margin: 0; 
-    padding: 0;
-    background-image: url('images/bg.jpg'); /* ここで背景を指定 */
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
-    display: flex;
-    flex-direction: row;
-}
-
-/* ボタンをCanvaの枠にする */
-.btn { 
-    background-image: url('images/btn_bg.png'); /* ここでボタン枠を指定 */
-    background-size: 100% 100%;
-    background-color: transparent; /* 元の背景色を消す */
-    border: none;
-    width: 280px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #4a2e19; /* 文字色を木の板に合わせる */
-    cursor: pointer;
-}
-
-/* 中央の鳥の画像をきれいに見せる */
-.center-area { 
-    background: rgba(255, 255, 255, 0.5); /* 少し透けさせる */
-    border-radius: 20px;
-    margin: 20px;
-}
+        /* 先ほど整えたスタイルをここに凝縮 */
+        body { margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: row; background-color: #f0f0f0; overflow: hidden; visibility: hidden; font-family: sans-serif; }
+        .player-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #p1 { background-color: #f0faff; transform: rotate(-90deg); }
+        #p2 { background-color: #fff0f0; transform: rotate(90deg); }
+        .center-area { width: 35%; display: flex; align-items: center; justify-content: center; background: white; border-left: 2px solid #ccc; border-right: 2px solid #ccc; }
+        #bird-image { width: 250px; height: 250px; object-fit: cover; border-radius: 15px; transform: rotate(-90deg); }
+        .btn-container { display: flex; flex-direction: column; gap: 15px; width: 80%; }
+        .btn { padding: 20px 10px; font-size: 28px; font-weight: bold; border-radius: 20px; border: 4px solid #ddd; background: white; cursor: pointer; }
+        #result-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -52,7 +26,7 @@ body {
     </div>
 
     <div id="p1" class="player-area">
-        <div id="score1" style="font-size:1.5rem; margin-bottom:20px;">P1: 0/10</div>
+        <div id="score1" style="font-size:2rem; margin-bottom:20px;">P1: 0/10</div>
         <div id="btns1" class="btn-container"></div>
     </div>
 
@@ -61,16 +35,19 @@ body {
     </div>
 
     <div id="p2" class="player-area">
-        <div id="score2" style="font-size:1.5rem; margin-bottom:20px;">P2: 0/10</div>
+        <div id="score2" style="font-size:2rem; margin-bottom:20px;">P2: 0/10</div>
         <div id="btns2" class="btn-container"></div>
     </div>
 
     <script>
-        // 【秘密の合言葉】ここを自由に変えてください
-        const SECRET_KEY = "104"; 
+        const SECRET_KEY = "1234"; // あなたの合言葉
+
+        // 音声ファイルの設定（フォルダ名やファイル名が合っているか確認してください）
+        const seCorrect = new Audio('sounds/correct.mp3'); 
+        const seWin = new Audio('sounds/win.mp3');
 
         const birdList = [
-            { name: "アオサギ", image: "images/aosagi.jpg" },
+             { name: "アオサギ", image: "images/aosagi.jpg" },
             { name: "バン", image: "images/ban.jpg" },
             { name: "ドバト", image: "images/dobato.jpg" },
             { name: "ハッカチョウ", image: "images/hakkatyo.jpg" },
@@ -80,7 +57,7 @@ body {
             { name: "はっとり", image: "images/hattori.jpg" },
             { name: "ヒヨドリ", image: "images/hoyodori.jpg" },
             { name: "フクロウ", image: "images/hukuro.jpg" },
-            { name: "ジョウビタキ", image: "images/joubitaki.jpg" },
+            { name: "ジョウビタキ", image: "images/jobitaki.jpg" },
             { name: "カッコー", image: "images/kakko.jpg" },
             { name: "カルガモ", image: "images/karugamo.jpg" },
             { name: "カワラヒラ", image: "images/kawarahira.jpg" },
@@ -97,7 +74,7 @@ body {
             { name: "ムクドリ", image: "images/mukudori.jpg" },
             { name: "オナガ", image: "images/onaga.jpg" },
             { name: "オオタカ", image: "images/ootaka.jpg" },
-            { name: "オシドリ", image: "images/osidori.jpg" },
+            { name: "オシドリ", image: "images/oshidori.jpg" },
 　　　　　　{ name: "白色レグホン", image: "images/reguhon.jpg" },
             { name: "セグロセキレイ", image: "images/segurosekirei.jpg" },
             { name: "セキトリ", image: "images/sekitori.jpg" },
@@ -116,11 +93,16 @@ body {
             { name: "ユリカモメ", image: "images/urikamome.jpg" },
             { name: "マガン", image: "images/magan.jpg" },
 
-            // ... 他の鳥も同様に追加 ...
+            { name: "コガモ", image: "images/kogamo.jpg" } // コガモ追加
+            // 他の鳥もここに追加...
         ];
 
+        let remainingBirds = [];
+        let currentBird = null;
+        let scores = { p1: 0, p2: 0 };
+
         function checkPassword() {
-            const input = prompt("合言葉を入力してください");
+            const input = prompt("104");
             if (input === SECRET_KEY) {
                 document.body.style.visibility = "visible";
                 initGame();
@@ -129,11 +111,6 @@ body {
                 window.location.reload();
             }
         }
-
-        // 以下、ゲームのロジック（前回と同じ）
-        let remainingBirds = [];
-        let currentBird = null;
-        let scores = { p1: 0, p2: 0 };
 
         function initGame() {
             remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
@@ -158,7 +135,19 @@ body {
             const c = document.getElementById(id); c.innerHTML = '';
             choices.forEach(n => {
                 const b = document.createElement('button'); b.className = 'btn'; b.innerText = n;
-                b.onclick = () => { if(n === currentBird.name) { scores[p]++; updateScore(); if(scores[p]>=10) endGame(p); else nextQuestion(); } };
+                b.onclick = () => {
+                    if(n === currentBird.name) {
+                        seCorrect.play(); // ★正解音を鳴らす
+                        scores[p]++;
+                        updateScore();
+                        if(scores[p] >= 10) {
+                            seWin.play(); // ★優勝音を鳴らす
+                            endGame(p);
+                        } else {
+                            nextQuestion();
+                        }
+                    }
+                };
                 c.appendChild(b);
             });
         }
@@ -173,7 +162,6 @@ body {
             document.getElementById('winner-text').innerText = (w === 'p1') ? "PLAYER 1 WIN!" : "PLAYER 2 WIN!";
         }
 
-        // 起動時にパスワードチェック
         window.onload = checkPassword;
     </script>
 </body>
