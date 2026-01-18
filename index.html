@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">    
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>とりなまえバトル（横並び対戦版）</title>
+    <style>
+       /* 1. 背景全体にCanvaの画像をしきつめる */
+body { 
+    background-image: url('images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+/* 2. ボタンを画像（木の板など）にする */
+.btn { 
+    background-image: url('images/btn_bg.png');
+    background-size: 100% 100%;
+    background-color: transparent; /* 背景色を消す */
+    border: none;
+    color: #4a2e19; /* 木の板に合う文字色 */
+    width: 280px;
+    height: 80px; /* 画像の比率に合わせて調整 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+/* 3. 結果画面にバッジを表示する場所を作る */
+.badge-img {
+    width: 200px;
+    height: auto;
+    margin-bottom: 20px;
+}
+    </style>
+</head>
+<body>
+
+    <div id="result-screen">
+        <div id="winner-text" class="win-lose"></div>
+        <button onclick="location.reload()" style="margin-top:50px; padding:20px 40px; font-size:24px; border-radius:10px;">RESTART</button>
+    </div>
+
+    <div id="p1" class="player-area">
+        <div id="score1" class="score">P1 Score: 0/10</div>
+        <div id="btns1" class="btn-container"></div>
+    </div>
+
+    <div class="center-area">
+        <img id="bird-image" src="" alt="とり">
+    </div>
+
+    <div id="p2" class="player-area">
+        <div id="score2" class="score">P2 Score: 0/10</div>
+        <div id="btns2" class="btn-container"></div>
+    </div>
+
+    <script>
+
+        // 画像リスト（あなたのファイル名に合わせて調整してください）
+        const birdList = [
+            { name: "スズメ", image: "images/suzume.jpg" },
+            { name: "メジロ", image: "images/mejiro.jpg" },
+            { name: "アオサギ", image: "images/aosagi.jpg" },
+　　　　　　{ name: "バン", image: "images/ban.jpg" },
+            { name: "ヨタカ", image: "images/yotaka.jpg" },
+            { name: "ハクセキレイ", image: "images/hakusekirei.jpg" },
+            { name: "ハッカチョウ", image: "images/hakkatyo.jpg" },
+            { name: "ハシボソガラス", image: "images/hashiboso.jpg" },
+　　　　　　{ name: "ハシブトガラス", image: "images/hashibuto.jpg" },
+            { name: "ヒヨドリ", image: "images/hiyodori.jpg" }, 
+        　  { name: "フクロウ", image: "images/hukuro.jpg" },
+            { name: "ジョウビタキ", image: "images/jobitaki.jpg" },
+            { name: "カルガモ", image: "images/karugamo.jpg" },
+　　　　　　{ name: "カワラヒラ", image: "images/kawarahira.jpg" },
+            { name: "カワセミ", image: "images/kawasemi.jpg" },                     
+            { name: "キセキレイ", image: "images/kisekirei.jpg" },
+            { name: "コガモ", image: "images/kogamo.jpg" },
+　　　　　　{ name: "コゲラ", image: "images/kogera.jpg" },
+            { name: "コサギ", image: "images/kosagi.jpg" },
+            { name: "マガモ", image: "images/magamo.jpga" },
+            { name: "マガン", image: "images/magan.jpg" },
+            { name: "ミミズク", image: "images/mimizuku.jpg" },
+　　　　　　{ name: "モズ", image: "images/mozu.jpg" },
+            { name: "ムクドリ", image: "images/mukudori.jpg" }, 
+        　  { name: "オナガ", image: "images/onaga.jpg" },
+            { name: "オオタカ", image: "images/ootaka.jpg" },
+            { name: "オシドリ", image: "images/oshidori.jpg" },
+　　　　　　{ name: "セグロセキレイ", image: "images/segurosekirei.jpg" },
+            { name: "シジュウカラ", image: "images/shijukara.jpg" },
+            { name: "シロハラ", image: "images/shirohara.jpg" },
+            { name: "タンチョウ", image: "images/tancyo.jpg" },
+　　　　　　{ name: "ツバメ", image: "images/tsubame.jpg" },
+            { name: "ツグミ", image: "images/tsugumi.jpg" }, 
+        　  { name: "ウグイス", image: "images/uguisu.jpg" },
+            { name: "ウミネコ", image: "images/umineko.jpg" },
+            { name: "ウミウ", image: "images/umiu.jpg" },
+　　　　　　{ name: "ヨタカ", image: "images/yotaka.jpg" },
+　　　　　　{ name: "コブトリじいさん", image: "images/kobutori.jpg" },
+            { name: "ハットリハンゾウ", image: "images/hattori.jpg" },
+　　　　　  { name: "シギ", image: "images/shigi.jpg" },
+ 　　　　　 { name: "チドリ", image: "images/tidori.jpg" },
+ 　 　　　  { name: "カッコウ", image: "images/kakko.jpg" },
+            { name: "セキトリ", image: "images/sekitori.jpg" },
+            { name: "ユリカモメ", image: "images/yurikamome.jpg" }, 
+        ];
+
+        const soundCorrect = new Audio('sounds/correct.mp3');
+        const soundFanfare = new Audio('sounds/fanfare.mp3');
+
+        let remainingBirds = [];
+        let currentBird = null;
+        let scores = { p1: 0, p2: 0 };
+        const WIN_SCORE = 10;
+
+        function initGame() {
+            remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (remainingBirds.length === 0) {
+                remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
+            }
+            currentBird = remainingBirds.pop();
+            document.getElementById('bird-image').src = currentBird.image;
+
+            const choices = generateChoices(currentBird.name);
+            updateUI('btns1', choices, 'p1');
+            updateUI('btns2', choices, 'p2');
+        }
+
+        function generateChoices(correctName) {
+            let others = birdList.filter(b => b.name !== correctName);
+            others.sort(() => Math.random() - 0.5);
+            let selection = [correctName, others[0].name, others[1].name, others[2].name];
+            return selection.sort(() => Math.random() - 0.5);
+        }
+
+        function updateUI(containerId, choices, playerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            choices.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = name;
+                btn.onclick = () => check(playerId, name);
+                container.appendChild(btn);
+            });
+        }
+
+        function check(player, selected) {
+            if (selected === currentBird.name) {
+                soundCorrect.currentTime = 0;
+                soundCorrect.play();
+                scores[player]++;
+                document.getElementById(`score1`).innerText = `P1 Score: ${scores.p1}/10`;
+                document.getElementById(`score2`).innerText = `P2 Score: ${scores.p2}/10`;
+
+                if (scores[player] >= WIN_SCORE) {
+                    endGame(player);
+                } else {
+                    nextQuestion();
+                }
+            }
+        }
+
+        function endGame(winner) {
+            soundFanfare.play();
+            const res = document.getElementById('result-screen');
+            res.style.display = 'flex';
+            document.getElementById('winner-text').innerText = (winner === 'p1') ? "PLAYER 1 WIN!" : "PLAYER 2 WIN!";
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
