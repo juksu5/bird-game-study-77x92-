@@ -6,45 +6,135 @@
     <meta name="robots" content="noindex,nofollow">
     <title>とりなまえバトル</title>
     <style>
-        /* 先ほど整えたスタイルをここに凝縮 */
-        body { margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: row; background-color: #f0f0f0; overflow: hidden; visibility: hidden; font-family: sans-serif; }
-        .player-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #p1 { background-color: #f0faff; transform: rotate(-90deg); }
-        #p2 { background-color: #fff0f0; transform: rotate(90deg); }
-        .center-area { width: 35%; display: flex; align-items: center; justify-content: center; background: white; border-left: 2px solid #ccc; border-right: 2px solid #ccc; }
-        #bird-image { width: 250px; height: 250px; object-fit: cover; border-radius: 15px; transform: rotate(-90deg); }
-        .btn-container { display: flex; flex-direction: column; gap: 15px; width: 80%; }
-        .btn { padding: 20px 10px; font-size: 28px; font-weight: bold; border-radius: 20px; border: 4px solid #ddd; background: white; cursor: pointer; }
-        #result-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        /* 全体の背景設定：合言葉入力中も見えます */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            background-image: url('images/bg.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ゲーム画面全体を包む枠：合言葉が合うまで隠す */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: row;
+            visibility: hidden; 
+        }
+
+        .player-area { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        /* プレイヤーごとの向き調整 */
+        #p1 { transform: rotate(-90deg); } /* 左に90度 */
+        #p2 { transform: rotate(90deg); }  /* 右に90度 */
+
+        /* 中央エリア：背景を少し暗くして画像を見やすく */
+        .center-area { 
+            width: 35%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: rgba(255, 255, 255, 0.2); 
+            border-left: 2px solid rgba(255,255,255,0.3);
+            border-right: 2px solid rgba(255,255,255,0.3);
+        }
+
+        /* 中央の鳥の画像：プレイヤー1に合わせて左に90度 */
+        #bird-image { 
+            width: 300px; 
+            height: 300px; 
+            object-fit: cover; 
+            border-radius: 25px;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: rotate(-90deg); 
+        }
+
+        /* ボタンのコンテナ */
+        .btn-container { display: flex; flex-direction: column; gap: 20px; width: 85%; }
+        
+        /* 選択ボタンのデザイン */
+        .btn { 
+            padding: 25px 10px; 
+            font-size: 36px; 
+            font-weight: bold; 
+            color: #4a2e19; /* 木の板に合う茶色 */
+            border: none;
+            background-image: url('images/btn_bg.png'); 
+            background-size: 100% 100%;
+            background-color: transparent;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        #score1, #score2 { 
+            font-size: 3rem; 
+            font-weight: bold; 
+            color: white; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 30px; 
+        }
+
+        /* 勝利画面 */
+        #result-screen { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            color: white; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000; 
+        }
     </style>
 </head>
 <body>
 
     <div id="result-screen">
-        <h1 id="winner-text">PLAYER 1 WIN!</h1>
-        <button onclick="location.reload()" style="padding:20px; font-size:24px;">RESTART</button>
+        <h1 id="winner-text" style="font-size: 80px;">PLAYER 1 WIN!</h1>
+        <button onclick="location.reload()" style="padding:20px 50px; font-size:30px; border-radius:15px; cursor:pointer;">もういちど あそぶ</button>
     </div>
 
-    <div id="p1" class="player-area">
-        <div id="score1" style="font-size:2rem; margin-bottom:20px;">P1: 0/10</div>
-        <div id="btns1" class="btn-container"></div>
-    </div>
+    <div id="game-container">
+        <div id="p1" class="player-area">
+            <div id="score1">P1: 0/10</div>
+            <div id="btns1" class="btn-container"></div>
+        </div>
 
-    <div class="center-area">
-        <img id="bird-image" src="" alt="とり">
-    </div>
+        <div class="center-area">
+            <img id="bird-image" src="" alt="とり">
+        </div>
 
-    <div id="p2" class="player-area">
-        <div id="score2" style="font-size:2rem; margin-bottom:20px;">P2: 0/10</div>
-        <div id="btns2" class="btn-container"></div>
+        <div id="p2" class="player-area">
+            <div id="score2">P2: 0/10</div>
+            <div id="btns2" class="btn-container"></div>
+        </div>
     </div>
 
     <script>
-        const SECRET_KEY = "1234"; // あなたの合言葉
-
-        // 音声ファイルの設定（フォルダ名やファイル名が合っているか確認してください）
+        // --- 設定エリア ---
+        const SECRET_KEY = "104"; // 合言葉
         const seCorrect = new Audio('sounds/correct.mp3'); 
-        const seWin = new Audio('sounds/win.mp3');
+        const seWin = new Audio('sounds/fanfare.mp3'); // ファンファーレのファイル名を確認
 
         const birdList = [
              { name: "アオサギ", image: "images/aosagi.jpg" },
@@ -52,17 +142,17 @@
             { name: "ドバト", image: "images/dobato.jpg" },
             { name: "ハッカチョウ", image: "images/hakkatyo.jpg" },
             { name: "ハクセキレイ", image: "images/hakusekirei.jpg" },
-            { name: "ハシボソガラス", image: "images/hasiboso.jpg" },
-            { name: "ハシブトガラス", image: "images/hasibuto.jpg" },
+            { name: "ハシボソガラス", image: "images/hashiboso.jpg" },
+            { name: "ハシブトガラス", image: "images/hashibuto.jpg" },
             { name: "はっとり", image: "images/hattori.jpg" },
-            { name: "ヒヨドリ", image: "images/hoyodori.jpg" },
+            { name: "ヒヨドリ", image: "images/hiyodori.jpg" },
             { name: "フクロウ", image: "images/hukuro.jpg" },
             { name: "ジョウビタキ", image: "images/jobitaki.jpg" },
             { name: "カッコー", image: "images/kakko.jpg" },
             { name: "カルガモ", image: "images/karugamo.jpg" },
-            { name: "カワラヒラ", image: "images/kawarahira.jpg" },
+            { name: "カワラヒワ", image: "images/kawarahiwa.jpg" },
             { name: "カワセミ", image: "images/kasasemi.jpg" },
-            { name: "キセキレイ", image: "images/kirsekirei.jpg" },
+            { name: "キセキレイ", image: "images/kisekirei.jpg" },
             { name: "こぶとり", image: "images/kobutori.jpg" },
             { name: "コガモ", image: "images/kogamo.jpg" },
 　　　　　　{ name: "コゲラ", image: "images/kogera.jpg" },
@@ -79,7 +169,7 @@
             { name: "セグロセキレイ", image: "images/segurosekirei.jpg" },
             { name: "セキトリ", image: "images/sekitori.jpg" },
             { name: "シギ", image: "images/shigi.jpg" },
-            { name: "シジュウカラ", image: "images/sijukara.jpg" },
+            { name: "シジュウカラ", image: "images/shijukara.jpg" },
 　　　　　　{ name: "シロハラ", image: "images/shirohara.jpg" },
             { name: "スズメ", image: "images/suzume.jpg" },
 　　　　　　{ name: "タンチョウ", image: "images/tancyo.jpg" },
@@ -93,18 +183,18 @@
             { name: "ユリカモメ", image: "images/urikamome.jpg" },
             { name: "マガン", image: "images/magan.jpg" },
 
-            { name: "コガモ", image: "images/kogamo.jpg" } // コガモ追加
-            // 他の鳥もここに追加...
+            { name: "コガモ", image: "images/kogamo.jpg" }
         ];
 
         let remainingBirds = [];
         let currentBird = null;
         let scores = { p1: 0, p2: 0 };
 
+        // --- 合言葉チェック ---
         function checkPassword() {
-            const input = prompt("104");
+            const input = prompt("合言葉を入力してください");
             if (input === SECRET_KEY) {
-                document.body.style.visibility = "visible";
+                document.getElementById('game-container').style.visibility = "visible";
                 initGame();
             } else {
                 alert("合言葉が違います。");
@@ -112,15 +202,19 @@
             }
         }
 
+        // --- ゲーム管理 ---
         function initGame() {
             remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
             nextQuestion();
         }
 
         function nextQuestion() {
-            if (remainingBirds.length === 0) remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
+            if (remainingBirds.length === 0) {
+                remainingBirds = [...birdList].sort(() => Math.random() - 0.5);
+            }
             currentBird = remainingBirds.pop();
             document.getElementById('bird-image').src = currentBird.image;
+            
             const choices = generateChoices(currentBird.name);
             updateUI('btns1', choices, 'p1');
             updateUI('btns2', choices, 'p2');
@@ -128,27 +222,31 @@
 
         function generateChoices(correct) {
             let others = birdList.filter(b => b.name !== correct).sort(() => Math.random() - 0.5);
-            return [correct, others[0].name, others[1].name, others[2].name].sort(() => Math.random() - 0.5);
+            let combined = [correct, others[0].name, others[1].name, others[2].name];
+            return combined.sort(() => Math.random() - 0.5);
         }
 
         function updateUI(id, choices, p) {
-            const c = document.getElementById(id); c.innerHTML = '';
-            choices.forEach(n => {
-                const b = document.createElement('button'); b.className = 'btn'; b.innerText = n;
-                b.onclick = () => {
-                    if(n === currentBird.name) {
-                        seCorrect.play(); // ★正解音を鳴らす
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            choices.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = name;
+                btn.onclick = () => {
+                    if(name === currentBird.name) {
+                        seCorrect.play();
                         scores[p]++;
                         updateScore();
                         if(scores[p] >= 10) {
-                            seWin.play(); // ★優勝音を鳴らす
+                            seWin.play(); // ファンファーレ
                             endGame(p);
                         } else {
                             nextQuestion();
                         }
                     }
                 };
-                c.appendChild(b);
+                container.appendChild(btn);
             });
         }
 
@@ -157,9 +255,9 @@
             document.getElementById('score2').innerText = `P2: ${scores.p2}/10`;
         }
 
-        function endGame(w) {
+        function endGame(winner) {
             document.getElementById('result-screen').style.display = 'flex';
-            document.getElementById('winner-text').innerText = (w === 'p1') ? "PLAYER 1 WIN!" : "PLAYER 2 WIN!";
+            document.getElementById('winner-text').innerText = (winner === 'p1') ? "PLAYER 1 WIN!" : "PLAYER 2 WIN!";
         }
 
         window.onload = checkPassword;
